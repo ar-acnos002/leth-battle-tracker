@@ -89,12 +89,59 @@ def remove_enemy(idx):
 
 
 # ---- UI ----
-st.title("TTRPG Battle Tracker (Web)")
+st.markdown(
+    "<h1 style='text-align: center; margin-bottom: 100px;'>TTRPG Battle Tracker</h1>",
+    unsafe_allow_html=True,
+)
+
+
+# ---- Battle Controls ----
+def init_battle_state():
+    if "battle_active" not in st.session_state:
+        st.session_state.battle_active = False
+    if "turn_number" not in st.session_state:
+        st.session_state.turn_number = 1  # always start at 1
+
+
+init_battle_state()
+
+
+def start_battle():
+    st.session_state.battle_active = True
+
+
+def end_battle():
+    st.session_state.battle_active = False
+    st.session_state.turn_number = 1
+
+
+def next_turn():
+    st.session_state.turn_number += 1
+    # recover health and mana for all party members
+    for member in (
+        st.session_state.base_party_members + st.session_state.extra_party_members
+    ):
+        member["health"] = min(member["health"] + 1, MAX_HEALTH)
+        member["mana"] = min(member["mana"] + 1, MAX_MANA)
+
 
 party_col, enemy_col = st.columns(2, gap="large")
 
+
+# ---- Party Reset ----
+def long_rest():
+    for member in (
+        st.session_state.base_party_members + st.session_state.extra_party_members
+    ):
+        member["health"] = MAX_HEALTH
+        member["mana"] = MAX_MANA
+
+
 # ----- Party UI -----
 with party_col:
+    # Long Rest button
+    st.button("Long Rest", use_container_width=True, on_click=long_rest)
+
     st.subheader("Party Members")
     st.button("+ Add Party Member", on_click=add_party_member)
 
@@ -115,22 +162,38 @@ with party_col:
             )
 
             with c1:
-                if st.button("➖", key=f"p_h_dec_{i}", use_container_width=True):
-                    update_party_health(i, -1)
+                st.button(
+                    "➖",
+                    key=f"p_h_dec_{i}",
+                    use_container_width=True,
+                    on_click=lambda idx=i: update_party_health(idx, -1),
+                )
             with c2:
                 st.markdown(f"**Health:** {member['health']} / {MAX_HEALTH}")
             with c3:
-                if st.button("➕", key=f"p_h_inc_{i}", use_container_width=True):
-                    update_party_health(i, 1)
+                st.button(
+                    "➕",
+                    key=f"p_h_inc_{i}",
+                    use_container_width=True,
+                    on_click=lambda idx=i: update_party_health(idx, 1),
+                )
 
             with c4:
-                if st.button("➖", key=f"p_m_dec_{i}", use_container_width=True):
-                    update_party_mana(i, -1)
+                st.button(
+                    "➖",
+                    key=f"p_m_dec_{i}",
+                    use_container_width=True,
+                    on_click=lambda idx=i: update_party_mana(idx, -1),
+                )
             with c5:
                 st.markdown(f"**Mana:** {member['mana']} / {MAX_MANA}")
             with c6:
-                if st.button("➕", key=f"p_m_inc_{i}", use_container_width=True):
-                    update_party_mana(i, 1)
+                st.button(
+                    "➕",
+                    key=f"p_m_inc_{i}",
+                    use_container_width=True,
+                    on_click=lambda idx=i: update_party_mana(idx, 1),
+                )
 
             if i >= base_len:
                 if st.button("Remove", key=f"p_rm_{i}"):
@@ -139,6 +202,19 @@ with party_col:
 
 # ----- Enemies UI -----
 with enemy_col:
+    if not st.session_state.battle_active:
+        st.button("Start Battle", use_container_width=True, on_click=start_battle)
+    else:
+        col_a, col_b, col_c = st.columns([1, 1, 1])
+        with col_a:
+            st.button("End Battle", use_container_width=True, on_click=end_battle)
+        with col_b:
+            st.markdown(
+                f"**Turn: {st.session_state.turn_number}**", unsafe_allow_html=True
+            )
+        with col_c:
+            st.button("Next Turn", use_container_width=True, on_click=next_turn)
+
     st.subheader("Enemies")
     st.button("+ Add Enemy", on_click=add_enemy)
 
@@ -153,22 +229,38 @@ with enemy_col:
             )
 
             with c1:
-                if st.button("➖", key=f"e_h_dec_{i}", use_container_width=True):
-                    update_enemy_health(i, -1)
+                st.button(
+                    "➖",
+                    key=f"e_h_dec_{i}",
+                    use_container_width=True,
+                    on_click=lambda idx=i: update_enemy_health(idx, -1),
+                )
             with c2:
                 st.markdown(f"**Health:** {enemy['health']} / {MAX_HEALTH}")
             with c3:
-                if st.button("➕", key=f"e_h_inc_{i}", use_container_width=True):
-                    update_enemy_health(i, 1)
+                st.button(
+                    "➕",
+                    key=f"e_h_inc_{i}",
+                    use_container_width=True,
+                    on_click=lambda idx=i: update_enemy_health(idx, 1),
+                )
 
             with c4:
-                if st.button("➖", key=f"e_m_dec_{i}", use_container_width=True):
-                    update_enemy_mana(i, -1)
+                st.button(
+                    "➖",
+                    key=f"e_m_dec_{i}",
+                    use_container_width=True,
+                    on_click=lambda idx=i: update_enemy_mana(idx, -1),
+                )
             with c5:
                 st.markdown(f"**Mana:** {enemy['mana']} / {MAX_MANA}")
             with c6:
-                if st.button("➕", key=f"e_m_inc_{i}", use_container_width=True):
-                    update_enemy_mana(i, 1)
+                st.button(
+                    "➕",
+                    key=f"e_m_inc_{i}",
+                    use_container_width=True,
+                    on_click=lambda idx=i: update_enemy_mana(idx, 1),
+                )
 
             if st.button("Remove", key=f"e_rm_{i}"):
                 remove_enemy(i)
