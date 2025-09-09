@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
+import random
 
 # Refresh every 5 seconds
 st_autorefresh(interval=2000, key="auto_refresh")
@@ -9,10 +10,10 @@ st_autorefresh(interval=2000, key="auto_refresh")
 MAX_HEALTH = 20
 MAX_MANA = 10
 
-st.set_page_config(page_title="Battle Tracker", layout="wide")
+st.set_page_config(page_title="Dead By D&D", layout="wide")
 
 
-# ---- Shared Global State (Singleton) ----
+# ---- Shared Global State (cache_resource) ----
 @st.cache_resource
 def get_shared_state():
     return {
@@ -94,6 +95,8 @@ def long_rest():
     for member in state["party"] + state["extra_party"]:
         member["health"] = MAX_HEALTH
         member["mana"] = MAX_MANA
+        member["latest_roll"] = ""
+        member["roll_count"] = 0
 
 
 def start_battle():
@@ -113,9 +116,15 @@ def next_turn():
         member["mana"] = min(member["mana"] + 1, MAX_MANA)
 
 
+def roll_dice(num_dice, sides=6):
+    rolls = [random.randint(1, sides) for _ in range(num_dice)]
+    total = sum(rolls)
+    return total
+
+
 # ---- UI ----
 st.markdown(
-    "<h1 style='text-align: center; margin-bottom: 50px;'>Battle Tracker</h1>",
+    "<h2 style='text-align: center; margin-bottom: 20px;'>Dead By D&D</h2>",
     unsafe_allow_html=True,
 )
 
@@ -127,10 +136,13 @@ with party_col:
         long_rest()
         st.rerun()
 
-    st.subheader("Party Members")
-    if st.button("+ Add Party Member"):
-        add_party_member()
-        st.rerun()
+    col1, col2 = st.columns([3, 2])
+    with col1:
+        st.subheader("Party Members")
+    with col2:
+        if st.button("+ Add Party Member", use_container_width=True):
+            add_party_member()
+            st.rerun()
 
     all_members = state["party"] + state["extra_party"]
     base_len = len(state["party"])
@@ -172,6 +184,40 @@ with party_col:
                     remove_party_member(i)
                     st.rerun()
 
+            # ---- Dice Rolling Section ----
+            if "latest_roll" not in member:
+                member["latest_roll"] = ""
+            if "roll_count" not in member:
+                member["roll_count"] = 0
+
+            d1, d2, d3, d4 = st.columns([2, 2, 2, 4])
+            with d1:
+                if st.button("2D6", key=f"p_roll2_{i}", use_container_width=True):
+                    total = roll_dice(2)
+                    member["roll_count"] += 1
+                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    st.rerun()
+            with d2:
+                if st.button("4D6", key=f"p_roll4_{i}", use_container_width=True):
+                    total = roll_dice(4)
+                    member["roll_count"] += 1
+                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    st.rerun()
+            with d3:
+                if st.button("6D6", key=f"p_roll6_{i}", use_container_width=True):
+                    total = roll_dice(6)
+                    member["roll_count"] += 1
+                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    st.rerun()
+            with d4:
+                st.text_input(
+                    "Roll",
+                    value=member["latest_roll"],
+                    key=f"p_rolltxt_{i}",
+                    disabled=True,
+                    label_visibility="collapsed",
+                )
+
 # ----- Enemies UI -----
 with enemy_col:
     if not state["battle_active"]:
@@ -191,10 +237,13 @@ with enemy_col:
                 next_turn()
                 st.rerun()
 
-    st.subheader("Enemies")
-    if st.button("+ Add Enemy"):
-        add_enemy()
-        st.rerun()
+    col1, col2 = st.columns([3, 2])
+    with col1:
+        st.subheader("Enemies")
+    with col2:
+        if st.button("+ Add Enemy", use_container_width=True):
+            add_enemy()
+            st.rerun()
 
     for i, enemy in enumerate(state["enemies"]):
         with st.container(border=True):
