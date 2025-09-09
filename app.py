@@ -9,7 +9,7 @@ st_autorefresh(interval=2000, key="auto_refresh")
 MAX_HEALTH = 20
 MAX_MANA = 10
 
-st.set_page_config(page_title="TTRPG Battle Tracker", layout="wide")
+st.set_page_config(page_title="Battle Tracker", layout="wide")
 
 
 # ---- Shared Global State (Singleton) ----
@@ -115,7 +115,7 @@ def next_turn():
 
 # ---- UI ----
 st.markdown(
-    "<h1 style='text-align: center; margin-bottom: 50px;'>TTRPG Battle Tracker</h1>",
+    "<h1 style='text-align: center; margin-bottom: 50px;'>Battle Tracker</h1>",
     unsafe_allow_html=True,
 )
 
