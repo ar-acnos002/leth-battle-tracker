@@ -3,7 +3,7 @@ from streamlit_autorefresh import st_autorefresh
 import random
 
 # Refresh every 5 seconds
-st_autorefresh(interval=2000, key="auto_refresh")
+st_autorefresh(interval=500, key="auto_refresh")
 
 
 # ---- Config ----
