@@ -10,7 +10,30 @@ st_autorefresh(interval=500, key="auto_refresh")
 MAX_HEALTH = 20
 MAX_MANA = 10
 
-st.set_page_config(page_title="Dead By D&D", page_icon="⚔️", layout="wide")
+# Hide the header, "Manage App" button, and "Made with Streamlit" footer
+st.markdown(
+    """
+    <style>
+    /* Hide the hamburger menu */
+    #MainMenu {visibility: hidden;}
+    
+    /* Hide the footer */
+    footer {visibility: hidden;}
+    
+    /* Hide the header */
+    header {visibility: hidden;}
+
+    /* Hide the "Deploy" button (useful for local testing) */
+    .stDeployButton {display: none;}
+
+    /* Target the "Manage App" button in the Community Cloud */
+    .embeddedAppMetaInfoBar_container__DxxL1 {visibility: hidden;}
+    </style>
+""",
+    unsafe_allow_html=True,
+)
+
+st.set_page_config(page_title="Dead by D&D", page_icon="⚔️", layout="wide")
 
 
 # ---- Shared Global State (cache_resource) ----
@@ -124,7 +147,9 @@ def roll_dice(num_dice, sides=6):
 
 # ---- UI ----
 st.markdown(
-    "<h2 style='text-align: center; margin-bottom: 20px;'>Dead By D&D</h2>",
+    """
+    <h2 style='text-align: center; margin-top: -105px; font-family: "Gill Sans", sans-serif; font-style: bold;'>Dead by D&D</h2>
+    """,
     unsafe_allow_html=True,
 )
 
