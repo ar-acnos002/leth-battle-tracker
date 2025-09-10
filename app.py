@@ -11,7 +11,6 @@ MAX_HEALTH = 20
 MAX_MANA = 10
 
 st.set_page_config(page_title="Dead By D&D", page_icon="⚔️", layout="wide")
-st.markdown("<script>document.title = 'Dead By D&D';</script>", unsafe_allow_html=True)
 
 
 # ---- Shared Global State (cache_resource) ----
