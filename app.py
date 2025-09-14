@@ -41,10 +41,10 @@ st.set_page_config(page_title="Dead by D&D", page_icon="⚔️", layout="wide")
 def get_shared_state():
     return {
         "party": [
-            {"name": "Xharis", "health": MAX_HEALTH, "mana": MAX_MANA},
-            {"name": "Vaelor", "health": MAX_HEALTH, "mana": MAX_MANA},
+            {"name": "Xharis Paridion", "health": MAX_HEALTH, "mana": MAX_MANA},
+            {"name": "Vaelor Grimvier", "health": MAX_HEALTH, "mana": MAX_MANA},
             {"name": "Aethos", "health": MAX_HEALTH, "mana": MAX_MANA},
-            {"name": "Jetta", "health": MAX_HEALTH, "mana": MAX_MANA},
+            {"name": "Jetta Yu", "health": MAX_HEALTH, "mana": MAX_MANA},
         ],
         "extra_party": [],
         "enemies": [],
