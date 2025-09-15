@@ -134,9 +134,15 @@ def end_battle():
 
 def next_turn():
     state["turn_number"] += 1
-    for member in state["party"] + state["extra_party"]:
-        member["health"] = min(member["health"] + 1, MAX_HEALTH)
-        member["mana"] = min(member["mana"] + 1, MAX_MANA)
+    if state["turn_number"] % 2 > 0:
+        for member in state["party"] + state["extra_party"]:
+            member["health"] = min(member["health"] + 1, MAX_HEALTH)
+            member["mana"] = min(member["mana"] + 1, MAX_MANA)
+
+    if state["turn_number"] % 2 == 0:
+        for enemy in state["enemies"]:
+            enemy["health"] = min(enemy["health"] + 1, MAX_HEALTH)
+            enemy["mana"] = min(enemy["mana"] + 1, MAX_MANA)
 
 
 def roll_dice(num_dice, sides=6):
