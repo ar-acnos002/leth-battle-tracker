@@ -49,7 +49,9 @@ def get_shared_state():
         "extra_party": [],
         "enemies": [],
         "battle_active": False,
-        "turn_number": 1,
+        "round": 1,
+        "enemy_turn": 0,
+        "party_turn": 1,
     }
 
 
@@ -124,22 +126,28 @@ def long_rest():
 
 def start_battle():
     state["battle_active"] = True
-    state["turn_number"] = 1
+    state["round"] = 1
+    state["party_turn"] = 1
+    state["enemy_turn"] = 0
 
 
 def end_battle():
     state["battle_active"] = False
-    state["turn_number"] = 1
+    state["round"] = 1
+    state["party_turn"] = 1
+    state["enemy_turn"] = 0
 
 
 def next_turn():
-    state["turn_number"] += 1
-    if state["turn_number"] % 2 > 0:
+    if state["enemy_turn"] == state["party_turn"]:
+        state["round"] += 1
+        state["party_turn"] += 1
         for member in state["party"] + state["extra_party"]:
             member["health"] = min(member["health"] + 1, MAX_HEALTH)
             member["mana"] = min(member["mana"] + 1, MAX_MANA)
 
-    if state["turn_number"] % 2 == 0:
+    else:
+        state["enemy_turn"] += 1
         for enemy in state["enemies"]:
             enemy["health"] = min(enemy["health"] + 1, MAX_HEALTH)
             enemy["mana"] = min(enemy["mana"] + 1, MAX_MANA)
@@ -154,7 +162,7 @@ def roll_dice(num_dice, sides=6):
 # ---- UI ----
 st.markdown(
     """
-    <h2 style='text-align: center; margin-top: -105px; font-family: "Gill Sans", sans-serif; font-style: bold;'>Dead by D&D</h2>
+    <h2 style='text-align: center; margin-top: -105px; font-family: "Gill Sans", sans-serif;'>Dead by D&D</h2>
     """,
     unsafe_allow_html=True,
 )
@@ -210,35 +218,42 @@ with party_col:
                     update_party_mana(i, 1)
                     st.rerun()
 
-            if i >= base_len:
-                if st.button("Remove", key=f"p_rm_{i}"):
-                    remove_party_member(i)
-                    st.rerun()
-
             # ---- Dice Rolling Section ----
             if "latest_roll" not in member:
                 member["latest_roll"] = ""
             if "roll_count" not in member:
                 member["roll_count"] = 0
 
-            d1, d2, d3, d4 = st.columns([2, 2, 2, 4])
+            if member in state["party"]:
+                d1, d2, d3, d4 = st.columns([2, 2, 2, 4])
+                columns = [d1, d2, d3, d4]
+            else:
+                d1, d2, d3, d4, d5 = st.columns([2, 2, 2, 4, 2])
+                columns = [d1, d2, d3, d4, d5]
+
             with d1:
                 if st.button("2D6", key=f"p_roll2_{i}", use_container_width=True):
                     total = roll_dice(2)
                     member["roll_count"] += 1
-                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    member["latest_roll"] = (
+                        f"Roll #{member['roll_count']}: 2D6:\t{total}"
+                    )
                     st.rerun()
             with d2:
                 if st.button("4D6", key=f"p_roll4_{i}", use_container_width=True):
                     total = roll_dice(4)
                     member["roll_count"] += 1
-                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    member["latest_roll"] = (
+                        f"Roll #{member['roll_count']}: 4D6:\t{total}"
+                    )
                     st.rerun()
             with d3:
                 if st.button("6D6", key=f"p_roll6_{i}", use_container_width=True):
                     total = roll_dice(6)
                     member["roll_count"] += 1
-                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    member["latest_roll"] = (
+                        f"Roll #{member['roll_count']}: 6D6:\t{total}"
+                    )
                     st.rerun()
             with d4:
                 st.text_input(
@@ -248,6 +263,15 @@ with party_col:
                     disabled=True,
                     label_visibility="collapsed",
                 )
+            if len(columns) == 5:
+                with d5:
+                    if i >= base_len:
+                        if st.button(
+                            "Remove", key=f"p_rm_{i}", use_container_width=True
+                        ):
+                            remove_party_member(i)
+                            st.rerun()
+
 
 # ----- Enemies UI -----
 with enemy_col:
@@ -256,13 +280,16 @@ with enemy_col:
             start_battle()
             st.rerun()
     else:
-        col_a, col_b, col_c = st.columns([1, 1, 1])
+        col_a, col_b, col_c = st.columns([1, 2, 1])
         with col_a:
             if st.button("End Battle", use_container_width=True):
                 end_battle()
                 st.rerun()
         with col_b:
-            st.markdown(f"**Turn: {state['turn_number']}**")
+            st.markdown(
+                f"<div style='text-align: center;'>Round: {state['round']} | Party Turn: {state['party_turn']} | Enemy Turn: {state['enemy_turn']}</div>",
+                unsafe_allow_html=True,
+            )
         with col_c:
             if st.button("Next Turn", use_container_width=True):
                 next_turn()
@@ -308,6 +335,40 @@ with enemy_col:
                     update_enemy_mana(i, 1)
                     st.rerun()
 
-            if st.button("Remove", key=f"e_rm_{i}"):
-                remove_enemy(i)
-                st.rerun()
+            # ---- Dice Rolling Section ----
+            if "latest_roll" not in enemy:
+                enemy["latest_roll"] = ""
+            if "roll_count" not in enemy:
+                enemy["roll_count"] = 0
+
+            d1, d2, d3, d4, d5 = st.columns([2, 4, 2, 2, 2])
+            with d1:
+                if st.button("Remove", key=f"e_rm_{i}", use_container_width=True):
+                    remove_enemy(i)
+                    st.rerun()
+            with d2:
+                st.text_input(
+                    "Roll",
+                    value=enemy["latest_roll"],
+                    key=f"e_rolltxt_{i}",
+                    disabled=True,
+                    label_visibility="collapsed",
+                )
+            with d3:
+                if st.button("2D6", key=f"e_roll2_{i}", use_container_width=True):
+                    total = roll_dice(2)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: 2D6:\t{total}"
+                    st.rerun()
+            with d4:
+                if st.button("4D6", key=f"e_roll4_{i}", use_container_width=True):
+                    total = roll_dice(4)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: 4D6:\t{total}"
+                    st.rerun()
+            with d5:
+                if st.button("6D6", key=f"e_roll6_{i}", use_container_width=True):
+                    total = roll_dice(6)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: 6D6:\t{total}"
+                    st.rerun()
