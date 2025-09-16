@@ -210,18 +210,19 @@ with party_col:
                     update_party_mana(i, 1)
                     st.rerun()
 
-            if i >= base_len:
-                if st.button("Remove", key=f"p_rm_{i}"):
-                    remove_party_member(i)
-                    st.rerun()
-
             # ---- Dice Rolling Section ----
             if "latest_roll" not in member:
                 member["latest_roll"] = ""
             if "roll_count" not in member:
                 member["roll_count"] = 0
 
-            d1, d2, d3, d4 = st.columns([2, 2, 2, 4])
+            if member in state["party"]:
+                d1, d2, d3, d4 = st.columns([2, 2, 2, 4])
+                columns = [d1, d2, d3, d4]
+            else:
+                d1, d2, d3, d4, d5 = st.columns([2, 2, 2, 4, 2])
+                columns = [d1, d2, d3, d4, d5]
+
             with d1:
                 if st.button("2D6", key=f"p_roll2_{i}", use_container_width=True):
                     total = roll_dice(2)
@@ -248,6 +249,15 @@ with party_col:
                     disabled=True,
                     label_visibility="collapsed",
                 )
+            if len(columns) == 5:
+                with d5:
+                    if i >= base_len:
+                        if st.button(
+                            "Remove", key=f"p_rm_{i}", use_container_width=True
+                        ):
+                            remove_party_member(i)
+                            st.rerun()
+
 
 # ----- Enemies UI -----
 with enemy_col:
@@ -308,6 +318,40 @@ with enemy_col:
                     update_enemy_mana(i, 1)
                     st.rerun()
 
-            if st.button("Remove", key=f"e_rm_{i}"):
-                remove_enemy(i)
-                st.rerun()
+            # ---- Dice Rolling Section ----
+            if "latest_roll" not in enemy:
+                enemy["latest_roll"] = ""
+            if "roll_count" not in enemy:
+                enemy["roll_count"] = 0
+
+            d1, d2, d3, d4, d5 = st.columns([2, 2, 2, 2, 4])
+            with d1:
+                if st.button("Remove", key=f"e_rm_{i}", use_container_width=True):
+                    remove_enemy(i)
+                    st.rerun()
+            with d2:
+                if st.button("2D6", key=f"e_roll2_{i}", use_container_width=True):
+                    total = roll_dice(2)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: {total}"
+                    st.rerun()
+            with d3:
+                if st.button("4D6", key=f"e_roll4_{i}", use_container_width=True):
+                    total = roll_dice(4)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: {total}"
+                    st.rerun()
+            with d4:
+                if st.button("6D6", key=f"e_roll6_{i}", use_container_width=True):
+                    total = roll_dice(6)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: {total}"
+                    st.rerun()
+            with d5:
+                st.text_input(
+                    "Roll",
+                    value=enemy["latest_roll"],
+                    key=f"e_rolltxt_{i}",
+                    disabled=True,
+                    label_visibility="collapsed",
+                )
