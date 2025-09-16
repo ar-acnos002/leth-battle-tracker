@@ -227,19 +227,25 @@ with party_col:
                 if st.button("2D6", key=f"p_roll2_{i}", use_container_width=True):
                     total = roll_dice(2)
                     member["roll_count"] += 1
-                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    member["latest_roll"] = (
+                        f"Roll #{member['roll_count']}: 2D6:\t{total}"
+                    )
                     st.rerun()
             with d2:
                 if st.button("4D6", key=f"p_roll4_{i}", use_container_width=True):
                     total = roll_dice(4)
                     member["roll_count"] += 1
-                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    member["latest_roll"] = (
+                        f"Roll #{member['roll_count']}: 4D6:\t{total}"
+                    )
                     st.rerun()
             with d3:
                 if st.button("6D6", key=f"p_roll6_{i}", use_container_width=True):
                     total = roll_dice(6)
                     member["roll_count"] += 1
-                    member["latest_roll"] = f"Roll #{member['roll_count']}: {total}"
+                    member["latest_roll"] = (
+                        f"Roll #{member['roll_count']}: 6D6:\t{total}"
+                    )
                     st.rerun()
             with d4:
                 st.text_input(
@@ -324,30 +330,12 @@ with enemy_col:
             if "roll_count" not in enemy:
                 enemy["roll_count"] = 0
 
-            d1, d2, d3, d4, d5 = st.columns([2, 2, 2, 2, 4])
+            d1, d2, d3, d4, d5 = st.columns([2, 4, 2, 2, 2])
             with d1:
                 if st.button("Remove", key=f"e_rm_{i}", use_container_width=True):
                     remove_enemy(i)
                     st.rerun()
             with d2:
-                if st.button("2D6", key=f"e_roll2_{i}", use_container_width=True):
-                    total = roll_dice(2)
-                    enemy["roll_count"] += 1
-                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: {total}"
-                    st.rerun()
-            with d3:
-                if st.button("4D6", key=f"e_roll4_{i}", use_container_width=True):
-                    total = roll_dice(4)
-                    enemy["roll_count"] += 1
-                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: {total}"
-                    st.rerun()
-            with d4:
-                if st.button("6D6", key=f"e_roll6_{i}", use_container_width=True):
-                    total = roll_dice(6)
-                    enemy["roll_count"] += 1
-                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: {total}"
-                    st.rerun()
-            with d5:
                 st.text_input(
                     "Roll",
                     value=enemy["latest_roll"],
@@ -355,3 +343,21 @@ with enemy_col:
                     disabled=True,
                     label_visibility="collapsed",
                 )
+            with d3:
+                if st.button("2D6", key=f"e_roll2_{i}", use_container_width=True):
+                    total = roll_dice(2)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: 2D6:\t{total}"
+                    st.rerun()
+            with d4:
+                if st.button("4D6", key=f"e_roll4_{i}", use_container_width=True):
+                    total = roll_dice(4)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: 4D6:\t{total}"
+                    st.rerun()
+            with d5:
+                if st.button("6D6", key=f"e_roll6_{i}", use_container_width=True):
+                    total = roll_dice(6)
+                    enemy["roll_count"] += 1
+                    enemy["latest_roll"] = f"Roll #{enemy['roll_count']}: 6D6:\t{total}"
+                    st.rerun()
