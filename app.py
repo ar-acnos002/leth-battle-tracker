@@ -49,7 +49,9 @@ def get_shared_state():
         "extra_party": [],
         "enemies": [],
         "battle_active": False,
-        "turn_number": 1,
+        "round": 1,
+        "enemy_turn": 0,
+        "party_turn": 1,
     }
 
 
@@ -124,22 +126,28 @@ def long_rest():
 
 def start_battle():
     state["battle_active"] = True
-    state["turn_number"] = 1
+    state["round"] = 1
+    state["party_turn"] = 1
+    state["enemy_turn"] = 0
 
 
 def end_battle():
     state["battle_active"] = False
-    state["turn_number"] = 1
+    state["round"] = 1
+    state["party_turn"] = 1
+    state["enemy_turn"] = 0
 
 
 def next_turn():
-    state["turn_number"] += 1
-    if state["turn_number"] % 2 > 0:
+    if state["enemy_turn"] == state["party_turn"]:
+        state["round"] += 1
+        state["party_turn"] += 1
         for member in state["party"] + state["extra_party"]:
             member["health"] = min(member["health"] + 1, MAX_HEALTH)
             member["mana"] = min(member["mana"] + 1, MAX_MANA)
 
-    if state["turn_number"] % 2 == 0:
+    else:
+        state["enemy_turn"] += 1
         for enemy in state["enemies"]:
             enemy["health"] = min(enemy["health"] + 1, MAX_HEALTH)
             enemy["mana"] = min(enemy["mana"] + 1, MAX_MANA)
@@ -154,7 +162,7 @@ def roll_dice(num_dice, sides=6):
 # ---- UI ----
 st.markdown(
     """
-    <h2 style='text-align: center; margin-top: -105px; font-family: "Gill Sans", sans-serif; font-style: bold;'>Dead by D&D</h2>
+    <h2 style='text-align: center; margin-top: -105px; font-family: "Gill Sans", sans-serif;'>Dead by D&D</h2>
     """,
     unsafe_allow_html=True,
 )
@@ -272,13 +280,16 @@ with enemy_col:
             start_battle()
             st.rerun()
     else:
-        col_a, col_b, col_c = st.columns([1, 1, 1])
+        col_a, col_b, col_c = st.columns([1, 2, 1])
         with col_a:
             if st.button("End Battle", use_container_width=True):
                 end_battle()
                 st.rerun()
         with col_b:
-            st.markdown(f"**Turn: {state['turn_number']}**")
+            st.markdown(
+                f"<div style='text-align: center;'>Round: {state['round']} | Party Turn: {state['party_turn']} | Enemy Turn: {state['enemy_turn']}</div>",
+                unsafe_allow_html=True,
+            )
         with col_c:
             if st.button("Next Turn", use_container_width=True):
                 next_turn()
